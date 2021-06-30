@@ -3,11 +3,11 @@ package com.digitalinnovationone.springboot.service;
 import com.digitalinnovationone.springboot.dto.MessageResponseDTO;
 import com.digitalinnovationone.springboot.dto.request.PersonDTO;
 import com.digitalinnovationone.springboot.entity.Person;
+import com.digitalinnovationone.springboot.exception.PersonNotFoundException;
 import com.digitalinnovationone.springboot.mapper.PersonMapper;
 import com.digitalinnovationone.springboot.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,5 +41,21 @@ public class PersonService {
         return allPeople.stream()
                 .map(personMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    public PersonDTO findById(Long id) throws PersonNotFoundException {
+        Person person = verifyIfExists(id);
+
+        return personMapper.toDTO(person);
+    }
+
+    public void delete(Long id) throws PersonNotFoundException {
+        verifyIfExists(id);
+        personRepository.deleteById(id);
+    }
+
+    private Person verifyIfExists(Long id) throws PersonNotFoundException {
+        return personRepository.findById(id)
+                .orElseThrow(() -> new PersonNotFoundException(id));
     }
 }
